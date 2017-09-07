@@ -1,0 +1,19 @@
+#centOS 7.x jdk8 长期支持版本
+FROM 10.200.102.120/library/java8-alpine:0.0.1
+
+#定义维护人信息
+MAINTAINER jeromeLiu "jeromeliu@can-dao.com"
+
+#复制项目代码文件
+COPY ./sources/*.jar /home/irms-service-registry-center/sources/
+COPY ./sources/lib/*.jar /home/irms-service-registry-center/sources/lib/
+COPY ./bin/jetty.sh /home/irms-service-registry-center/bin/
+
+RUN mkdir -p /data/irms-log/ervice-registry-center/ && \
+	chmod 755 /data/irms-log/ervice-registry-center/ && \
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai  /etc/localtime
+
+EXPOSE 6006 6106 6206 6306
+
+#CMD ["/bin/bash","-D"]
+ENTRYPOINT sh /home/irms-service-registry-center/bin/jetty.sh start && /bin/bash

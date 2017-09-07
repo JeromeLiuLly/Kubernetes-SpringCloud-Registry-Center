@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: serviceregistrycenterha1
+  labels:
+    name: serviceregistrycenterha1
+  namespace: kube-irms
+spec:
+  replicas: 1 #设置副本数
+  selector:
+    name: serviceregistrycenterha1
+  template:
+    metadata:
+      labels:
+        name: serviceregistrycenterha1
+    spec:
+      containers:
+      - name: serviceregistrycenterha1
+        image: 10.200.102.120/candao-irms/irms-service-registry-center:0.0.1
+        env:
+        - name: SPRING_ACTIVE
+          value: serviceregistrycenterha1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6106
+        volumeMounts:
+        - mountPath: /data/irms-log/service-registry-center/
+          name: logs
+        - mountPath: /etc/localtime
+          name: tz-config
+        - mountPath: /home/irms-service-registry-center/config/
+          name: properties-config
+        #command:
+        #["sh","/home/irms-demo-service/bin/jetty_qc.sh start","/bin/bash"]
+        #- sh
+        #- /home/irms-demo-service/startup.sh
+        #- start
+        #- -c
+        #- /bin/bash
+      volumes:
+      - hostPath:
+          path: /data/irms-log/service-registry-center/
+        name: logs
+      - hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+        name: tz-config
+      - hostPath:
+          path: /home/irms-properties/irms-service-registry-center/
+        name: properties-config
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    name: serviceregistrycenterha1
+  name: serviceregistrycenterha1
+  namespace: kube-irms
+spec:
+  type: NodePort
+  ports:
+  - port: 6106
+    targetPort: 6106
+    #nodePort: 30620 #6020=>30620该位置的节点端口号,官方的建议是使用高位端口号,防止冲突(30000-32767)
+  selector:
+    name: serviceregistrycenterha1
+  externalIPs: 
+    - 10.200.102.122

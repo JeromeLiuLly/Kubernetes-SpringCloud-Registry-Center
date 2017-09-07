@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: irms-service-registry-center
+  labels:
+    name: irms-service-registry-center
+  namespace: kube-irms
+spec:
+  replicas: 3 #设置副本数
+  selector:
+    name: irms-service-registry-center
+  template:
+    metadata:
+      labels:
+        name: irms-service-registry-center
+    spec:
+      containers:
+      - name: irms-service-registry-center
+        image: 192.168.204.66/candao-irms/irms-service-registry-center:0.0.1
+        env:
+        - name: SPRING_ACTIVE
+          value: env
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 6006
+        volumeMounts:
+        - mountPath: /home/irms-log/service-registry-center/
+          name: logs
+        - mountPath: /etc/localtime
+          name: tz-config
+        #command:
+        #["sh","/home/irms-demo-service/bin/jetty_qc.sh start","/bin/bash"]
+        #- sh
+        #- /home/irms-demo-service/startup.sh
+        #- start
+        #- -c
+        #- /bin/bash
+      volumes:
+      - hostPath:
+          path: /home/irms-log/service-registry-center/
+        name: logs
+      - hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+        name: tz-config
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    name: irms-service-registry-center
+  name: irms-service-registry-center
+  namespace: kube-irms
+spec:
+  type: NodePort
+  ports:
+  - port: 6006
+    targetPort: 6006
+    #nodePort: 30620 #6020=>30620该位置的节点端口号,官方的建议是使用高位端口号,防止冲突(30000-32767)
+  selector:
+    name: irms-service-registry-center
